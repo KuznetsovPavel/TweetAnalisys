@@ -2,6 +2,8 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,11 +14,14 @@ import org.springframework.web.client.RestTemplate;
 public class Loader {
 
     public static void main(final String[] args) {
-        final String appId = "0h4ZiKeHW7dMSVFFJx2AlEKaX";
-        final String appSecret = "gUdAQssFu6Hk6pbXys3kOIMRAE2pAgyYABQ0MBL3i9XkC63Z9H";
+        final Scanner scanner = new Scanner(System.in);
+        System.out.println("AppId: ");
+        final String appId = scanner.nextLine();
+        System.out.println("appSecret: ");
+        final String appSecret = scanner.nextLine();
         final int numberOfTweets = 20;
         final String appToken = fetchApplicationAccessToken(appId, appSecret);
-        final List<Tweet> tweets = searchTwitter("#java", appToken, numberOfTweets);
+        final List<Tweet> tweets = searchTwitter("#Срочно", appToken, numberOfTweets);
         int count = 1;
         for (Tweet tweet : tweets) {
             System.out.println("\ntwit number: " + count++);
