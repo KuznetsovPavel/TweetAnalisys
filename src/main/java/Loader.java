@@ -19,9 +19,10 @@ public class Loader {
         final String appId = scanner.nextLine();
         System.out.println("appSecret: ");
         final String appSecret = scanner.nextLine();
+        scanner.close();
         final int numberOfTweets = 20;
         final String appToken = fetchApplicationAccessToken(appId, appSecret);
-        final List<Tweet> tweets = searchTwitter("#Срочно", appToken, numberOfTweets);
+        final List<Tweet> tweets = searchTwitter("погода спб", appToken, numberOfTweets);
         int count = 1;
         for (Tweet tweet : tweets) {
             System.out.println("\ntwit number: " + count++);
@@ -33,11 +34,11 @@ public class Loader {
         final RestTemplate rest = new RestTemplate();
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + appToken);
-        final HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
+        final HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
         final Map result = rest.exchange("https://api.twitter.com/1.1/search/tweets.json?q={query}&count={numberOfTweets}",
                 HttpMethod.GET, requestEntity, Map.class, query, numberOfTweets).getBody();
         final List<Map<String, ?>> statuses = (List<Map<String, ?>>) result.get("statuses");
-        final List<Tweet> tweets = new ArrayList<Tweet>();
+        final List<Tweet> tweets = new ArrayList<>();
         for (Map<String, ?> status : statuses) {
             tweets.add(new Tweet(Long.valueOf(status.get("id").toString()), status.get("text").toString()));
         }
