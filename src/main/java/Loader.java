@@ -1,54 +1,63 @@
+import org.springframework.social.RateLimitExceededException;
+import org.springframework.social.twitter.api.SearchResults;
+import org.springframework.social.twitter.api.Tweet;
+import org.springframework.social.twitter.api.Twitter;
+import org.springframework.social.twitter.api.impl.TwitterTemplate;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.Queue;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.social.oauth2.OAuth2Operations;
-import org.springframework.social.oauth2.OAuth2Template;
-import org.springframework.web.client.RestTemplate;
+class Loader {
 
-public class Loader {
+    final private Twitter twitter;
 
-    public static void main(final String[] args) {
-        final Scanner scanner = new Scanner(System.in);
-        System.out.println("AppId: ");
-        final String appId = scanner.nextLine();
-        System.out.println("appSecret: ");
-        final String appSecret = scanner.nextLine();
-        scanner.close();
-        final int numberOfTweets = 20;
-        final String appToken = fetchApplicationAccessToken(appId, appSecret);
-        final List<Tweet> tweets = searchTwitter("погода спб", appToken, numberOfTweets);
-        int count = 1;
-        for (Tweet tweet : tweets) {
-            System.out.println("\ntwit number: " + count++);
-            System.out.println(tweet.getText());
-        }
+    private Queue<Tweet> queue;
+    private long maxID;
+
+    Loader(final String consumerKey, final String consumerSecret) {
+        this.twitter = new TwitterTemplate(consumerKey, consumerSecret);
+        //TODO: maxId should be init with DB
+        this.maxID = 9999999999999L;
     }
 
-    private static List<Tweet> searchTwitter(final String query, final String appToken, final int numberOfTweets) {
-        final RestTemplate rest = new RestTemplate();
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + appToken);
-        final HttpEntity<String> requestEntity = new HttpEntity<>("", headers);
-        final Map result = rest.exchange("https://api.twitter.com/1.1/search/tweets.json?q={query}&count={numberOfTweets}",
-                HttpMethod.GET, requestEntity, Map.class, query, numberOfTweets).getBody();
-        final List<Map<String, ?>> statuses = (List<Map<String, ?>>) result.get("statuses");
-        final List<Tweet> tweets = new ArrayList<>();
-        for (Map<String, ?> status : statuses) {
-            tweets.add(new Tweet(Long.valueOf(status.get("id").toString()), status.get("text").toString()));
+    public Tweet load(final String query) {
+        if (queue == null) {
+            loadPage(query);
         }
-        return tweets;
+        Tweet tweet = queue.poll();
+        if (tweet == null) {
+            loadPage(query);
+            tweet = queue.poll();
+        }
+        return tweet;
     }
 
-    private static String fetchApplicationAccessToken(String appId, String appSecret) {
-        OAuth2Operations oauth = new OAuth2Template(appId, appSecret, "",
-                "https://api.twitter.com/oauth2/token");
-        return oauth.authenticateClient().getAccessToken();
+    private void loadPage(final String query) {
+        final int pageSize = 120; // It is max page size
+        final int sinceID = 0; // It is min ID
+        SearchResults results = null;
+        while (results == null) {
+            try {
+                results = twitter.searchOperations().search(query,
+                        pageSize, sinceID, maxID - 1);
+            } catch (RateLimitExceededException e) {
+                e.printStackTrace();
+                System.out.println("Thread sleep...");
+                sleep();
+            }
+        }
+        final List<Tweet> tweets = results.getTweets();
+        maxID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
+        queue = new LinkedList<>(tweets);
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(1000 * 60 * 15); // 15 minutes is limit for framework
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }
