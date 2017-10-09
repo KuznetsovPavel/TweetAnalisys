@@ -11,36 +11,40 @@ import java.util.Queue;
 class Loader {
 
     final private Twitter twitter;
+    final private String query;
 
     private Queue<Tweet> queue;
+    private long minID;
     private long maxID;
 
-    Loader(final String consumerKey, final String consumerSecret) {
+    Loader(final String consumerKey, final String consumerSecret, final String query) {
         this.twitter = new TwitterTemplate(consumerKey, consumerSecret);
         //TODO: maxId should be init with DB
-        this.maxID = 9999999999999L;
+        this.minID = 9999999999999L;
+        this.query = query;
+        final List<Tweet> tweets = twitter.searchOperations().search(query).getTweets();
+        this.maxID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
     }
 
-    public Tweet load(final String query) {
+    public Tweet load() {
         if (queue == null) {
-            loadPage(query);
+            loadPage();
         }
         Tweet tweet = queue.poll();
         if (tweet == null) {
-            loadPage(query);
+            loadPage();
             tweet = queue.poll();
         }
         return tweet;
     }
 
-    private void loadPage(final String query) {
+    private void loadPage() {
         final int pageSize = 120; // It is max page size
-        final int sinceID = 0; // It is min ID
         SearchResults results = null;
         while (results == null) {
             try {
                 results = twitter.searchOperations().search(query,
-                        pageSize, sinceID, maxID - 1);
+                        pageSize, minID + 1, maxID);
             } catch (RateLimitExceededException e) {
                 e.printStackTrace();
                 System.out.println("Thread sleep...");
@@ -48,7 +52,7 @@ class Loader {
             }
         }
         final List<Tweet> tweets = results.getTweets();
-        maxID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
+        minID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
         queue = new LinkedList<>(tweets);
     }
 
@@ -59,5 +63,4 @@ class Loader {
             e.printStackTrace();
         }
     }
-
 }
