@@ -4,22 +4,33 @@ version '1.0-SNAPSHOT'
 buildscript {
     repositories {
         maven { url "https://repo.spring.io/libs-snapshot" }
+        maven { url "https://plugins.gradle.org/m2/"}
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.7.RELEASE")
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.1"
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
+apply plugin: "com.github.johnrengelman.shadow"
+
 
 jar {
     baseName = 'gs-register-twitter-app'
     version =  '0.1.0'
+    manifest {
+        attributes(
+                //'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'Client'
+        )
+    }
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
 
 repositories {
     mavenCentral()
@@ -29,4 +40,6 @@ repositories {
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
     compile group: 'org.springframework.social', name: 'spring-social-twitter', version: '2.0.0.M4'
+    compile 'org.postgresql:postgresql:42.1.4'
 }
+

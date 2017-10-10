@@ -17,13 +17,12 @@ class Loader {
     private long minID;
     private long maxID;
 
-    Loader(final String consumerKey, final String consumerSecret, final String query) {
+    Loader(final String consumerKey, final String consumerSecret, final String query, final long minID) {
         this.twitter = new TwitterTemplate(consumerKey, consumerSecret);
-        //TODO: maxId should be init with DB
-        this.minID = 9999999999999L;
+        this.minID = minID;
         this.query = query;
         final List<Tweet> tweets = twitter.searchOperations().search(query).getTweets();
-        this.maxID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
+        this.maxID = Long.parseLong(tweets.get(0).getId());
     }
 
     public Tweet load() {
@@ -31,7 +30,10 @@ class Loader {
             loadPage();
         }
         Tweet tweet = queue.poll();
+        int count = 0;
+        int maxNullAnswer = 10;
         if (tweet == null) {
+            if (++count == maxNullAnswer) return null; // if load data unreal
             loadPage();
             tweet = queue.poll();
         }
@@ -52,13 +54,17 @@ class Loader {
             }
         }
         final List<Tweet> tweets = results.getTweets();
-        minID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
-        queue = new LinkedList<>(tweets);
+        if (tweets != null) {
+            maxID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
+            queue = new LinkedList<>(tweets);
+        } else {
+            queue = new LinkedList<>();
+        }
     }
 
     private void sleep() {
         try {
-            Thread.sleep(1000 * 60 * 15); // 15 minutes is limit for framework
+            Thread.sleep(1000 * 60 * 10); // 15 minutes is limit for framework
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
