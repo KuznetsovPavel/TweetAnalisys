@@ -23,17 +23,15 @@ class Loader {
         this.query = query;
         final List<Tweet> tweets = twitter.searchOperations().search(query).getTweets();
         this.maxID = Long.parseLong(tweets.get(0).getId());
+        loadPage();
     }
 
     public Tweet load() {
-        if (queue == null) {
-            loadPage();
-        }
         Tweet tweet = queue.poll();
         int count = 0;
         int maxNullAnswer = 10;
         if (tweet == null) {
-            if (++count == maxNullAnswer) return null; // if load data unreal
+            if (++count >= maxNullAnswer) return null; // if load data unreal
             loadPage();
             tweet = queue.poll();
         }
@@ -49,12 +47,13 @@ class Loader {
                         pageSize, minID + 1, maxID);
             } catch (RateLimitExceededException e) {
                 e.printStackTrace();
+                results = null;
                 System.out.println("Thread sleep...");
                 sleep();
             }
         }
         final List<Tweet> tweets = results.getTweets();
-        if (tweets != null) {
+        if (!tweets.isEmpty()) {
             maxID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
             queue = new LinkedList<>(tweets);
         } else {

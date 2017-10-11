@@ -72,18 +72,11 @@ public class MongoDAO implements DataAccessObject{
         newTweet.put("fromUser", tweet.getFromUser());
         newTweet.put("fromUserId", tweet.getFromUserId());
         newTweet.put("retweetCount", tweet.getRetweetCount());
-        newTweet.put("inReplyToScreenName", tweet.getInReplyToScreenName());
-        newTweet.put("inReplyToStatusId", tweet.getInReplyToStatusId());
-        newTweet.put("inReplyToUserId", tweet.getInReplyToUserId());
-        newTweet.put("profileImageUrl", tweet.getProfileImageUrl());
-        newTweet.put("source", tweet.getSource());
-        newTweet.put("toUserId", tweet.getToUserId());
         final BasicDBObject tags = new BasicDBObject();
         final List<HashTagEntity> taglist = tweet.getEntities().getHashTags();
         int id = 0;
         for (HashTagEntity tag : taglist) {
-            tags.put("tag_" + id, tag.getText());
-            id++;
+            tags.put("tag_" + id++, tag.getText());
         }
         newTweet.put("tags", tags);
         tweetsCollection.insert(newTweet);
@@ -98,23 +91,11 @@ public class MongoDAO implements DataAccessObject{
         newUser.put("friendsCount", user.getFriendsCount());
         newUser.put("language", user.getLanguage());
         newUser.put("location", user.getLocation());
-        newUser.put("profileImageUrl", user.getProfileImageUrl());
         newUser.put("statusesCount", user.getStatusesCount());
         newUser.put("timeZone", user.getTimeZone());
-        newUser.put("backgroundColor", user.getBackgroundColor());
-        newUser.put("backgroundImageUrl", user.getBackgroundImageUrl());
-        newUser.put("description", user.getDescription());
         newUser.put("favoritesCount", user.getFavoritesCount());
-        newUser.put("linkColor", user.getLinkColor());
-        newUser.put("listedCount", user.getListedCount());
         newUser.put("name", user.getName());
-        newUser.put("profileBannerUrl", user.getProfileBannerUrl());
-        newUser.put("profileUrl", user.getProfileUrl());
         newUser.put("screenName", user.getScreenName());
-        newUser.put("sidebarBorderColor", user.getSidebarBorderColor());
-        newUser.put("sidebarFillColor", user.getSidebarFillColor());
-        newUser.put("textColor", user.getTextColor());
-        newUser.put("url", user.getUrl());
         newUser.put("utcOffset", user.getUtcOffset());
         usersCollection.insert(newUser);
     }

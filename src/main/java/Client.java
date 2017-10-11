@@ -7,7 +7,7 @@ public class Client {
     public static void main(String[] args) {
         final String consumerKey = "0h4ZiKeHW7dMSVFFJx2AlEKaX";
         final String consumerSecret = "gUdAQssFu6Hk6pbXys3kOIMRAE2pAgyYABQ0MBL3i9XkC63Z9H";
-        final String[] queryArray = {"java", "kotlin", "scala", "groovy", "cpp",
+        final String[] queryArray = {"kotlin", "java", "scala", "groovy", "cpp",
                 "swift", "perl", "javascript", "python", "ruby", "haskell", "matlab"};
         long testcount = 0;
         try {
@@ -37,35 +37,9 @@ public class Client {
 
             }
 
-
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-
-
-        /*try {
-                while (true){
-                    if (tweet == null) break;
-                    dao.putTweet(tweet);
-                    dao.putHashTag(tweet.getEntities().getHashTags(), Long.parseLong(tweet.getId()));
-                    dao.putUser(tweet.getUser());
-                    tweet = loader.load();
-                    if (++testcount % 500 == 0) {
-                        System.out.println();
-                        System.out.println();
-                        System.out.println(testcount);
-                        System.out.println(query);
-                        System.out.println(tweet.getCreatedAt());
-                        System.out.println();
-                        System.out.println();
-                        System.out.println();
-                        System.out.println();
-                    }
-                }
-            }
-        } catch (){
-            e.printStackTrace();
-        }*/
     }
 
 }
