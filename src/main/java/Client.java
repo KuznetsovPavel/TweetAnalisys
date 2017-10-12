@@ -34,9 +34,7 @@ public class Client {
                         System.out.println();
                     }
                 }
-
             }
-
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

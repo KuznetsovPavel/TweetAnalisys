@@ -8,7 +8,6 @@ import java.util.List;
 
 public class MongoDAO implements DataAccessObject{
 
-    private static Mongo mongo;
     private static DB db;
     private static MongoDAO dao;
 
@@ -18,9 +17,7 @@ public class MongoDAO implements DataAccessObject{
 
     public static DataAccessObject createConnect() throws UnknownHostException {
         if (dao != null) return dao;
-        mongo = new Mongo();
-        db = mongo.getDB("tweetdata");
-        db.dropDatabase();
+        Mongo mongo = new Mongo();
         db = mongo.getDB("tweetdata");
         dao = new MongoDAO();
         return dao;
@@ -99,5 +96,4 @@ public class MongoDAO implements DataAccessObject{
         newUser.put("utcOffset", user.getUtcOffset());
         usersCollection.insert(newUser);
     }
-
 }

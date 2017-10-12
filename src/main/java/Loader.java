@@ -41,7 +41,11 @@ class Loader {
     private void loadPage() {
         final int pageSize = 120; // It is max page size
         SearchResults results = null;
+        int errCount = 0;
         while (results == null) {
+            if (errCount++ >= 10) {
+                break;
+            }
             try {
                 results = twitter.searchOperations().search(query,
                         pageSize, minID + 1, maxID);
@@ -52,12 +56,12 @@ class Loader {
                 sleep();
             }
         }
-        final List<Tweet> tweets = results.getTweets();
-        if (!tweets.isEmpty()) {
+        if (results == null || results.getTweets().isEmpty()) {
+            queue = new LinkedList<>();
+        } else {
+            final List<Tweet> tweets = results.getTweets();
             maxID = Long.parseLong(tweets.get(tweets.size() - 1).getId());
             queue = new LinkedList<>(tweets);
-        } else {
-            queue = new LinkedList<>();
         }
     }
 
