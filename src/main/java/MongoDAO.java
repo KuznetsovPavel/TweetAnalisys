@@ -4,6 +4,7 @@ import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.TwitterProfile;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MongoDAO implements DataAccessObject{
@@ -95,5 +96,15 @@ public class MongoDAO implements DataAccessObject{
         newUser.put("screenName", user.getScreenName());
         newUser.put("utcOffset", user.getUtcOffset());
         usersCollection.insert(newUser);
+    }
+
+    @Override
+    public List<Tweet> removeTweets(String query) {
+        return null;
+    }
+
+    @Override
+    public void putTweets(List<Tweet> tweets, String query) {
+
     }
 }
