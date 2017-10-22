@@ -116,4 +116,14 @@ public class MongoDAO implements DataAccessObject{
             //nothing
         }
     }
+
+    @Override
+    public List<Tweet> removeTweets(String query) {
+        return null;
+    }
+
+    @Override
+    public void putTweets(List<Tweet> tweets, String query) {
+
+    }
 }
