@@ -1,9 +1,7 @@
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -15,6 +13,8 @@ import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.TwitterProfile;
 
 import java.util.List;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class MongoDAO implements DataAccessObject{
 
@@ -64,9 +64,8 @@ public class MongoDAO implements DataAccessObject{
 
     @Override
     public void putMinID(String query, long id) {
-        final Document filter = new Document("proglang" , query);
-        final Document update = new Document("proglang" , query).append("tweetID" , id);
-        lastTweetIDCollection.updateOne(filter, update);
+        lastTweetIDCollection.updateOne(eq("proglang", query),
+                new Document("$set", new Document("tweetID", id)));
     }
 
     @Override
@@ -88,11 +87,8 @@ public class MongoDAO implements DataAccessObject{
             tags.put("tag_" + id++, tag.getText());
         }
         newTweet.put("tags", tags);
-        try {
-            tweetsCollection.insertOne(newTweet);
-        } catch (DuplicateKeyException | MongoWriteException e) {
-            //nothing
-        }
+        final Document filter = new Document("Id", tweet.getId()).append("forQuery", query);
+        tweetsCollection.replaceOne(filter, newTweet, new UpdateOptions().upsert(true));
     }
 
     @Override
@@ -110,11 +106,8 @@ public class MongoDAO implements DataAccessObject{
         newUser.put("name", user.getName());
         newUser.put("screenName", user.getScreenName());
         newUser.put("utcOffset", user.getUtcOffset());
-        try {
-            usersCollection.insertOne(newUser);
-        } catch (DuplicateKeyException | MongoWriteException e) {
-            //nothing
-        }
+        final Document filter = new Document("Id", user.getId());
+        tweetsCollection.replaceOne(filter, newUser, new UpdateOptions().upsert(true));
     }
 
     @Override

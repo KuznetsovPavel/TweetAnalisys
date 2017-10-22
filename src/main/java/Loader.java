@@ -24,7 +24,6 @@ class Loader {
         this.query = query;
         final List<Tweet> tweets = twitter.searchOperations().search(query).getTweets();
         this.maxID = Long.parseLong(tweets.get(0).getId());
-        //this.maxID = 921069329000615940L;
         loadPage();
     }
 
