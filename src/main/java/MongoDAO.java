@@ -1,47 +1,62 @@
-import com.mongodb.*;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoWriteException;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
+import org.bson.Document;
+import org.slf4j.LoggerFactory;
 import org.springframework.social.twitter.api.HashTagEntity;
 import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.TwitterProfile;
 
-import java.net.UnknownHostException;
 import java.util.List;
 
 public class MongoDAO implements DataAccessObject{
 
-    private static DB db;
     private static MongoDAO dao;
+    private static MongoDatabase database;
 
-    private DBCollection lastTweetIDCollection;
-    private DBCollection tweetsCollection;
-    private DBCollection usersCollection;
+    private MongoCollection lastTweetIDCollection;
+    private MongoCollection tweetsCollection;
+    private MongoCollection usersCollection;
 
-    public static DataAccessObject createConnect() throws UnknownHostException {
+    public static DataAccessObject createConnect() {
         if (dao != null) return dao;
-        Mongo mongo = new Mongo();
-        db = mongo.getDB("tweetdata");
+        database = new MongoClient().getDatabase("tweetdata");
         dao = new MongoDAO();
+        dao.disableLogs();
         return dao;
     }
 
     private MongoDAO() {
-        lastTweetIDCollection = db.getCollection("lastTweetID");
-        tweetsCollection = db.getCollection("tweets");
-        usersCollection = db.getCollection("users");
+        lastTweetIDCollection = database.getCollection("lastTweetID");
+        tweetsCollection = database.getCollection("tweets");
+        usersCollection = database.getCollection("users");
     }
+
+    private void disableLogs() {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger rootLogger = loggerContext.getLogger("org.mongodb.driver");
+        rootLogger.setLevel(Level.OFF);
+    }
+
 
     @Override
     public long getMinID(String query) {
-        final BasicDBObject dbObject = new BasicDBObject();
-        dbObject.put("proglang" , query);
-        final DBCursor cursor = lastTweetIDCollection.find(dbObject);
-        Long answer;
+        final Document doc = new Document("proglang", query);
+        final MongoCursor cursor = lastTweetIDCollection.find(doc).iterator();
+        final Long answer;
         if (cursor.hasNext()) {
-            answer = (long) cursor.next().get("tweetID");
+            final Document document = (Document) cursor.next();
+            answer = (long) document.get("tweetID");
         } else {
-            BasicDBObject doc = new BasicDBObject();
-            doc.put("proglang", query);
-            doc.put("tweetID", 0L);
-            lastTweetIDCollection.insert(doc);
+            final Document document = new Document("proglang", query).append("tweetID", 0L);
+            lastTweetIDCollection.insertOne(document);
             answer = 0L;
         }
         return answer;
@@ -49,17 +64,14 @@ public class MongoDAO implements DataAccessObject{
 
     @Override
     public void putMinID(String query, long id) {
-        final BasicDBObject dbObjectQuery = new BasicDBObject();
-        dbObjectQuery.put("proglang" , query);
-        final BasicDBObject dbObjectUpdate = new BasicDBObject();
-        dbObjectUpdate.put("proglang" , query);
-        dbObjectUpdate.put("tweetID" , id);
-        lastTweetIDCollection.update(dbObjectQuery ,dbObjectUpdate, true, false);
+        final Document filter = new Document("proglang" , query);
+        final Document update = new Document("proglang" , query).append("tweetID" , id);
+        lastTweetIDCollection.updateOne(filter, update);
     }
 
     @Override
     public void putTweet(Tweet tweet, String query) {
-        final BasicDBObject newTweet = new BasicDBObject();
+        final Document newTweet = new Document();
         newTweet.put("Id" , tweet.getId());
         newTweet.put("forQuery", query);
         newTweet.put("text", tweet.getText());
@@ -69,19 +81,23 @@ public class MongoDAO implements DataAccessObject{
         newTweet.put("fromUser", tweet.getFromUser());
         newTweet.put("fromUserId", tweet.getFromUserId());
         newTweet.put("retweetCount", tweet.getRetweetCount());
-        final BasicDBObject tags = new BasicDBObject();
+        final Document tags = new Document();
         final List<HashTagEntity> taglist = tweet.getEntities().getHashTags();
         int id = 0;
         for (HashTagEntity tag : taglist) {
             tags.put("tag_" + id++, tag.getText());
         }
         newTweet.put("tags", tags);
-        tweetsCollection.insert(newTweet);
+        try {
+            tweetsCollection.insertOne(newTweet);
+        } catch (DuplicateKeyException | MongoWriteException e) {
+            //nothing
+        }
     }
 
     @Override
     public void putUser(TwitterProfile user) {
-        final BasicDBObject newUser = new BasicDBObject();
+        final Document newUser = new Document();
         newUser.put("Id" , user.getId());
         newUser.put("createdDate", user.getCreatedDate());
         newUser.put("followersCount", user.getFollowersCount());
@@ -94,6 +110,10 @@ public class MongoDAO implements DataAccessObject{
         newUser.put("name", user.getName());
         newUser.put("screenName", user.getScreenName());
         newUser.put("utcOffset", user.getUtcOffset());
-        usersCollection.insert(newUser);
+        try {
+            usersCollection.insertOne(newUser);
+        } catch (DuplicateKeyException | MongoWriteException e) {
+            //nothing
+        }
     }
 }

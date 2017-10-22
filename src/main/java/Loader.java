@@ -1,3 +1,4 @@
+import org.springframework.social.InternalServerErrorException;
 import org.springframework.social.RateLimitExceededException;
 import org.springframework.social.twitter.api.SearchResults;
 import org.springframework.social.twitter.api.Tweet;
@@ -23,14 +24,15 @@ class Loader {
         this.query = query;
         final List<Tweet> tweets = twitter.searchOperations().search(query).getTweets();
         this.maxID = Long.parseLong(tweets.get(0).getId());
+        //this.maxID = 921069329000615940L;
         loadPage();
     }
 
     public Tweet load() {
         Tweet tweet = queue.poll();
         int count = 0;
-        int maxNullAnswer = 10;
-        if (tweet == null) {
+        final int maxNullAnswer = 10;
+        while (tweet == null) {
             if (++count >= maxNullAnswer) return null; // if load data unreal
             loadPage();
             tweet = queue.poll();
@@ -49,14 +51,16 @@ class Loader {
             try {
                 results = twitter.searchOperations().search(query,
                         pageSize, minID + 1, maxID);
-            } catch (RateLimitExceededException e) {
+                System.out.println("Data received");
+                System.out.println();
+            } catch (RateLimitExceededException | InternalServerErrorException e) {
                 e.printStackTrace();
                 results = null;
                 System.out.println("Thread sleep...");
                 sleep();
             }
         }
-        if (results == null || results.getTweets().isEmpty()) {
+        if (results == null || results.getTweets().size() <= 1) {
             queue = new LinkedList<>();
         } else {
             final List<Tweet> tweets = results.getTweets();
