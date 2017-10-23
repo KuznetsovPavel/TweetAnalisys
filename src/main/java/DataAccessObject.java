@@ -16,4 +16,8 @@ public interface DataAccessObject{
     List<Tweet> removeTweets(String query);
 
     void putTweets(List<Tweet> tweets, String query);
+
+    List<SimpleTweet> getSimpleTweets(String query);
+
+    void putSimpleTweets(List<SimpleTweet> tweets, String query);
 }

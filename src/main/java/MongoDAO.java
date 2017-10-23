@@ -12,6 +12,8 @@ import org.springframework.social.twitter.api.HashTagEntity;
 import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.TwitterProfile;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -24,6 +26,7 @@ public class MongoDAO implements DataAccessObject{
     private MongoCollection lastTweetIDCollection;
     private MongoCollection tweetsCollection;
     private MongoCollection usersCollection;
+    private MongoCollection thematicTweetsCollection;
 
     public static DataAccessObject createConnect() {
         if (dao != null) return dao;
@@ -37,6 +40,7 @@ public class MongoDAO implements DataAccessObject{
         lastTweetIDCollection = database.getCollection("lastTweetID");
         tweetsCollection = database.getCollection("tweets");
         usersCollection = database.getCollection("users");
+        thematicTweetsCollection = database.getCollection("thematicTweets");
     }
 
     private void disableLogs() {
@@ -107,7 +111,7 @@ public class MongoDAO implements DataAccessObject{
         newUser.put("screenName", user.getScreenName());
         newUser.put("utcOffset", user.getUtcOffset());
         final Document filter = new Document("Id", user.getId());
-        tweetsCollection.replaceOne(filter, newUser, new UpdateOptions().upsert(true));
+        usersCollection.replaceOne(filter, newUser, new UpdateOptions().upsert(true));
     }
 
     @Override
@@ -118,5 +122,52 @@ public class MongoDAO implements DataAccessObject{
     @Override
     public void putTweets(List<Tweet> tweets, String query) {
 
+    }
+
+    @Override
+    public List<SimpleTweet> getSimpleTweets(String query) {
+        final Document doc = new Document("forQuery", query);
+        final MongoCursor cursor = tweetsCollection.find(doc).iterator();
+        List<SimpleTweet> list = new ArrayList<>();
+        if (cursor.hasNext()) {
+            final Document document = (Document) cursor.next();
+            final SimpleTweet tweet = new SimpleTweet(document.getLong("Id"),
+                    document.getString("forQuery"),
+                    document.getString("text"),
+                    (Date)document.get("createdAt"),
+                    document.getString("languageCode"),
+                    document.getInteger("favoriteCount"),
+                    document.getString("fromUser"),
+                    document.getLong("fromUserId"),
+                    document.getInteger("retweetCount"),
+                    null);
+            //TODO: add get tweet tags
+            list.add(tweet);
+        }
+        return list;
+    }
+
+    @Override
+    public void putSimpleTweets(List<SimpleTweet> tweets, String query) {
+        for (SimpleTweet tweet : tweets) {
+            final Document newTweet = new Document();
+            newTweet.put("Id" , tweet.getId());
+            newTweet.put("forQuery", query);
+            newTweet.put("text", tweet.getText());
+            newTweet.put("createdAt", tweet.getDate());
+            newTweet.put("languageCode", tweet.getLang());
+            newTweet.put("favoriteCount", tweet.getFavoriteCount());
+            newTweet.put("fromUser", tweet.getFromUser());
+            newTweet.put("fromUserId", tweet.getFromUserId());
+            newTweet.put("retweetCount", tweet.getRetweetCount());
+            final Document tags = new Document();
+            final List<String> taglist = tweet.getTags();
+            int id = 0;
+            for (String tag : taglist) {
+                tags.put("tag_" + id++, tag);
+            }
+            newTweet.put("tags", tags);
+            thematicTweetsCollection.insertOne(newTweet);
+        }
     }
 }
