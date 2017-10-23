@@ -1,9 +1,9 @@
 package checkers;
 
-import org.springframework.social.twitter.api.Tweet;
+import model.SimpleTweet;
 
 public interface Checker {
-    default boolean check(Tweet tweet){
+    default boolean check(SimpleTweet tweet){
         return check(tweet.getText());
     }
 

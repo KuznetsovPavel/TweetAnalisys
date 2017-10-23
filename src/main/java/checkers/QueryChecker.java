@@ -1,6 +1,6 @@
 package checkers;
 
-public class QueryChecker implements Checker {
+public class QueryChecker implements checkers.Checker {
     private final String query;
 
     public QueryChecker(String query) {

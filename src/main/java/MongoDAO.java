@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
+import model.SimpleTweet;
 import org.bson.Document;
 import org.slf4j.LoggerFactory;
 import org.springframework.social.twitter.api.HashTagEntity;
@@ -115,23 +116,13 @@ public class MongoDAO implements DataAccessObject{
     }
 
     @Override
-    public List<Tweet> removeTweets(String query) {
-        return null;
-    }
-
-    @Override
-    public void putTweets(List<Tweet> tweets, String query) {
-
-    }
-
-    @Override
     public List<SimpleTweet> getSimpleTweets(String query) {
         final Document doc = new Document("forQuery", query);
         final MongoCursor cursor = tweetsCollection.find(doc).iterator();
         List<SimpleTweet> list = new ArrayList<>();
-        if (cursor.hasNext()) {
+        while (cursor.hasNext()) {
             final Document document = (Document) cursor.next();
-            final SimpleTweet tweet = new SimpleTweet(document.getLong("Id"),
+            final SimpleTweet tweet = new SimpleTweet(Long.valueOf(document.getString("Id")),
                     document.getString("forQuery"),
                     document.getString("text"),
                     (Date)document.get("createdAt"),
@@ -140,7 +131,7 @@ public class MongoDAO implements DataAccessObject{
                     document.getString("fromUser"),
                     document.getLong("fromUserId"),
                     document.getInteger("retweetCount"),
-                    null);
+                    new ArrayList<>());
             //TODO: add get tweet tags
             list.add(tweet);
         }

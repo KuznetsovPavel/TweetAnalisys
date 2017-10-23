@@ -56,11 +56,7 @@ public class KeywordChecker implements Checker {
             int pc = Integer.compare(priority, o.priority);
             if (pc != 0)
                 return pc;
-            if (good == o.good)
-                return 0;
-            if (good)
-                return -1;
-            return 1;
+            return -Boolean.compare(good, o.good);
         }
 
         public String getWord() {
