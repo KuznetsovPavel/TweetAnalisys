@@ -1,20 +1,20 @@
 package checkers;
 
+import model.SimpleTweet;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class KeywordChecker implements Checker {
     private final List<Keyword> keywordList = new ArrayList<>();
+    private final Set<String> badLanguages = new HashSet<>();
 
-    public KeywordChecker(String keyWordFile) throws IOException {
-        final ClassPathResource resource = new ClassPathResource(keyWordFile);
-        try(BufferedReader reader = new BufferedReader(new FileReader(resource.getFile()))){
+    public KeywordChecker(String keywordFile, String configFile, String query) throws IOException {
+        final ClassPathResource keywordResource = new ClassPathResource(keywordFile);
+        try(BufferedReader reader = new BufferedReader(new FileReader(keywordResource.getFile()))){
             String line;
             while((line = reader.readLine()) != null) {
                 String[] split = line.split(" ");
@@ -26,10 +26,33 @@ public class KeywordChecker implements Checker {
             }
         }
         Collections.sort(keywordList);
+        final ClassPathResource configResource = new ClassPathResource(configFile);
+        try(BufferedReader reader = new BufferedReader(new FileReader(configResource.getFile()))){
+            String line;
+            while((line = reader.readLine()) != null) {
+                String[] split = line.split(" ");
+                if (split[0].equals(query)){
+                    for(int i = 1; i < split.length; ++i)
+                        badLanguages.add(split[i]);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean check(SimpleTweet tweet) {
+        if (badLanguages.contains(tweet.getLang()))
+            return check(tweet.getText(), false);
+        else
+            return check(tweet.getText(), true);
     }
 
     @Override
     public boolean check(String text) {
+        return check(text, true);
+    }
+
+    public boolean check(String text, boolean afterAll) {
         text = text.toLowerCase();
         for(Keyword keyword : keywordList){
             Pattern pattern = Pattern.compile("(^|\\W)" + keyword.getWord() + "(\\W|$)");
@@ -37,7 +60,7 @@ public class KeywordChecker implements Checker {
             if (matcher.find())
                 return keyword.isGood();
         }
-        return true;
+        return afterAll;
     }
 
     private static class Keyword implements Comparable<Keyword> {
