@@ -9,16 +9,17 @@ public class Client {
                 "swift", "perl", "javascript", "python", "ruby", "haskell", "matlab"};
         long testcount = 0;
         DataAccessObject dao = MongoDAO.createConnect();
+
         for (String query : queryArray) {
             final long minID = dao.getMinID(query);
             final Loader loader = new Loader(consumerKey, consumerSecret, query, minID);
             Tweet tweet = loader.load();
             dao.putMinID(query, Long.parseLong(tweet.getId()));
-            while (true) {
-                if (tweet == null) break;
+            while (true){
                 dao.putTweet(tweet, query);
                 dao.putUser(tweet.getUser());
                 tweet = loader.load();
+                if (tweet == null) break;
                 if (++testcount % 500 == 0) {
                     System.out.println("\n\n");
                     System.out.println("load tweet: " + testcount);

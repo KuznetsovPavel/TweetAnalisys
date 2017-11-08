@@ -1,2 +1,3 @@
+swift en
 groovy en fr de
-ruby en de
+ruby en de pt es

@@ -19,6 +19,7 @@ la - 3
 wear - 3
 wearing - 3
 look - 3
+@ruby - 3
 app + 2
 code + 2
 web + 2
@@ -31,3 +32,4 @@ job + 2
 jobs + 2
 qt + 2
 grails + 2
+rails + 2
