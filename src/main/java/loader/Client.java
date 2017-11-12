@@ -1,3 +1,7 @@
+package loader;
+
+import db.DataAccessObject;
+import db.MongoDAO;
 import org.springframework.social.twitter.api.Tweet;
 
 public class Client {

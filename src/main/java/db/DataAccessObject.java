@@ -1,3 +1,5 @@
+package db;
+
 import model.SimpleTweet;
 import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.TwitterProfile;

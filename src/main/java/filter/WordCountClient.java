@@ -1,9 +1,13 @@
+package filter;
+
+import db.DataAccessObject;
+import db.MongoDAO;
 import model.SimpleTweet;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class StatClient {
+public class WordCountClient {
     public static void main(String[] args) {
         final String query = "ruby";
         DataAccessObject dao = MongoDAO.createConnect();

@@ -1,4 +1,4 @@
-package checkers;
+package filter.checkers;
 
 import model.SimpleTweet;
 

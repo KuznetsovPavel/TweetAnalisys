@@ -1,28 +1,41 @@
-package checkers;
+package filter.checkers;
 
+import filter.OnlyTextMapper;
 import model.SimpleTweet;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class KeywordChecker implements Checker {
     private final List<Keyword> keywordList = new ArrayList<>();
     private final Set<String> badLanguages = new HashSet<>();
+    private final Function<String, String> onlyTextMapper = OnlyTextMapper.getInstance(false);
 
     public KeywordChecker(String keywordFile, String configFile, String query) throws IOException {
         final ClassPathResource keywordResource = new ClassPathResource(keywordFile);
         try(BufferedReader reader = new BufferedReader(new FileReader(keywordResource.getFile()))){
             String line;
+            boolean useKeywords = false;
             while((line = reader.readLine()) != null) {
-                String[] split = line.split(" ");
-                String word = split[0];
-                boolean good = split[1].equals("+");
-                int priority = Integer.parseInt(split[2]);
-                Keyword keyword = new Keyword(word, good, priority);
-                keywordList.add(keyword);
+                String[] split = line.trim().split(" ");
+                if(split.length == 0)
+                    continue;
+                if(split.length == 1){
+                    String groupLine = split[0];
+                    useKeywords = groupLine.contains("general") || groupLine.contains(query);
+                    continue;
+                }
+                if(useKeywords) {
+                    String word = split[0];
+                    boolean good = split[1].equals("+");
+                    int priority = Integer.parseInt(split[2]);
+                    Keyword keyword = new Keyword(word, good, priority);
+                    keywordList.add(keyword);
+                }
             }
         }
         Collections.sort(keywordList);
@@ -53,6 +66,7 @@ public class KeywordChecker implements Checker {
     }
 
     public boolean check(String text, boolean afterAll) {
+        text = onlyTextMapper.apply(text);
         text = text.toLowerCase();
         for(Keyword keyword : keywordList){
             Pattern pattern = Pattern.compile("(^|\\W)" + keyword.getWord() + "(\\W|$)");
