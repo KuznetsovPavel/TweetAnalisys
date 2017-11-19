@@ -54,7 +54,7 @@ public class KeywordChecker implements Checker {
 
     @Override
     public boolean check(SimpleTweet tweet) {
-        if (badLanguages.contains(tweet.getLang()))
+        if (badLanguages.contains(tweet.getLang()) || badLanguages.contains("all"))
             return check(tweet.getText(), false);
         else
             return check(tweet.getText(), true);

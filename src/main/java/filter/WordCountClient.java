@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class WordCountClient {
     public static void main(String[] args) {
-        final String query = "ruby";
+        final String query = "swift";
         DataAccessObject dao = MongoDAO.createConnect();
         List<SimpleTweet> tweets = dao.getSimpleTweets(query);
         List<String> words = tweets.stream()

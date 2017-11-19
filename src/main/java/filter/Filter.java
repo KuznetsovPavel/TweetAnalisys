@@ -15,8 +15,9 @@ import java.util.stream.Collectors;
 
 public class Filter {
     public static void main(String[] args) {
-        final String[] queryArray = {"kotlin", "java", "scala", "groovy", "cpp",
-                "swift", "perl", "javascript", "python", "ruby", "haskell", "matlab"};
+        /*final String[] queryArray = {"kotlin", "java", "scala", "groovy", "cpp",
+                "swift", "perl", "javascript", "python", "ruby", "haskell", "matlab"};*/
+        final String[] queryArray = {"swift", "ruby"};
         try {
             DataAccessObject dao = MongoDAO.createConnect();
             int count = 0;

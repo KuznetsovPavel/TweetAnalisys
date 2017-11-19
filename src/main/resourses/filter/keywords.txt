@@ -9,6 +9,7 @@ job + 2
 jobs + 2
 app + 2
 code + 2
+project + 2
 web + 2
 apps + 2
 software + 2
@@ -63,8 +64,22 @@ forces - 1
 power - 3
 
 swift:
+apple + 2
 taylor - 1
 life - 1
+hoofdklasser - 1
+hattrick - 1
+suzuki - 1
+jonathan - 1
+fans - 1
+feyenoord - 1
+acer - 1
+sport - 1
+keeper - 1
+strike - 1
+stephanie - 1
+россия - 1
+российским - 1
 
 python:
 ball - 1
@@ -84,10 +99,51 @@ redd - 1
 redsky - 1
 lee - 1
 anniversary - 1
-mcgreehan
+mcgreehan - 1
+mushroom - 1
+poisoned - 1
+pink - 1
+sale - 1
+tita - 1
 rails + 2
 node.js + 2
 python + 2
 
+
 haskell:
-Curry - 3
+james - 1
+internationals - 1
+rugby - 1
+squad - 1
+coach - 1
+wexler - 1
+danielle - 1
+dallas - 1
+ave - 1
+sport - 1
+jones - 1
+england - 1
+food - 1
+eddie - 1
+charge - 1
+miriam - 1
+curry - 3
+
+matlab:
+processing + 2
+numerical + 2
+mera - 3
+voh - 3
+iska - 3
+hai - 3
+jo - 3
+ne - 3
+kaam - 3
+ke - 3
+nahi - 3
+aur - 3
+maan - 3
+kuch - 3
+ho - 3
+ki - 3
+dhandha - 3
